@@ -4,6 +4,7 @@ var chalk = require('chalk'),
 	mongoose = require('mongoose'),
 	bodyParser = require('body-parser'),
 	multer = require('multer'), // manejador de forms multipart (subir archivos)
+	methodOverride = require('method-override'), // para navegadores que no soportan PUT / DETELETE etc
 	cloudinary = require('cloudinary'); //storage de imagenes
 	
 var	app = express();
@@ -13,7 +14,11 @@ var	app = express();
 app.engine('html', swig.renderFile);
 app.set('view engine', 'html');
 app.use(express.static('public'));
+app.use(express.static('uploads')); //TODO: es temporal para que se vean las imagenes
 //app.set('views', __dirname+'/views'); // por defecto usa ./views
+
+//method-override
+app.use(methodOverride);
 
 // body parser
 app.use(bodyParser.json());
@@ -32,13 +37,31 @@ cloudinary.config({
 //mongodb
 mongoose.connect('mongodb://localhost/primera_pagina');
 /* esquemas */
-var productSchema = {
+// var productSchema = {
+// 	title: String,
+// 	description: String,
+// 	imageUrl: String,
+// 	prize: Number
+// };
+// var Product = mongoose.model('Product', productSchema);
+var userReviewSchema = {
+	user: String,
 	title: String,
-	description: String,
-	imageUrl: String,
-	prize: Number
+	content: String,
+	score: Number,
+	votes: Number
 };
-var Product = mongoose.model('Product', productSchema);
+var UserReview = mongoose.model('UserReview', userReviewSchema);
+
+var oficialReviewSchema = {
+	title: String,
+	content: String,
+	hashtag: String,
+	score: Number,
+	imageUrl: String
+	//user_reviews: []
+};
+var OficialReview = mongoose.model('OficialReview', oficialReviewSchema);
 
 //metodos
 /*
@@ -50,36 +73,75 @@ borrar -> delete
 */
 app.get('/', function(req, res){
 	// var el = {
-	// 	title: 'Producto loco',
-	// 	description: 'Producto de prueba de mongoose',
-	// 	imageUrl: '',
-	// 	prize: 9.99
+	// 	title: 'Juego loco 2',
+	// 	text: 'El peor juego de la serie.',
+	// 	rating: 9.0,
+	// 	imageUrl: ''
+	// 	//user_reviews: []
 	// };
-	// var product = new Product(el);
-	// product.save(function(err){
+	// var oficialReview = new OficialReview(el);
+	// oficialReview.save(function(err){
 	// 	console.log(el);
 	// });
 	res.status(200)
 		.render('index',{nombre: 'Javi'});
 });
 
-app.get('/menu/new', function(req, res){ 
-	res.render('menu/new');
+/////////////// reviews ////////////////////////
+// formulario de alta
+app.get('/reviews/new', function(req, res){ 
+	res.render('reviews/new');
 });
 
-app.post('/menu', function(req, res){
+// listar todos
+app.get('/reviews', function(req, res){
+	OficialReview.find(function(err, reviews){
+		if(err){ console.log(err); }
+		res.render('reviews/index', { reviews: reviews });
+	});
+});
+// mostrar formulario para editar
+app.get('/reviews/edit/:id', function(req, res){
+	var id_review = req.params.id;
+	//console.log(chalk.yellow('param: ')+ id_review);
+	OficialReview.findOne({ _id: id_review }, function(err, review){
+		if(err){ console.log(err); }
+		else{ 
+			res.render('reviews/edit', { review: review });
+		}
+		//res.render('reviews/index', { reviews: reviews });
+	});
+});
+
+// alta
+app.post('/reviews', function(req, res){
 	var el = {
 		title: req.body.title,
-		description: req.body.description,
-		imageUrl: req.body.image_avatar,
-		prize: req.body.pricing
-	};	
-	console.log(req.files);
-	// var product = new Product(el);
-	// product.save(function(err){
-	// 	console.log(product);
-	// });
-	// res.render('index',{nombre: 'Javi'});
+		content: req.body.content,
+		hashtag: req.body.hashtag,
+		score: req.body.score,
+		imageUrl: req.files.review_image.name
+	};
+
+	var oficialReview = new OficialReview(el);
+	oficialReview.save(function(err){
+		console.log(oficialReview);
+	});
+	res.render('index', { nombre: 'Javi' });
+});
+
+
+////////////// admin //////////////
+app.get('/admin', function(req, res){
+	res.render('admin/form');
+});
+app.post('/admin', function(req, res){
+	OficialReview.find(function(err, reviews){
+		if(err){ console.log(err); }else{
+			// console.log(reviews);
+			res.render('admin/index', { reviews: reviews });			
+		}
+	});	
 });
 
 

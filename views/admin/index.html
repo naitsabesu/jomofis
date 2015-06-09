@@ -1,0 +1,36 @@
+{% extends '../layout.html' %}
+
+{% block content %}
+	<h1>Panel de administracion</h1>
+	<table class="table">
+		<thead>
+			<tr>
+				<th>#</th>
+				<th>Titulo</th>
+				<th>Hashtag</th>
+				<th>Review</th>
+				<th>Calificacion</th>
+				<th>Imagen</th>
+				<th>Acciones</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for review in reviews %}
+			<tr>
+				<td>{{ review.id }}</td>
+				<td>{{ review.title }}</td>
+				<td>{{ review.hashtag }}</td>
+				<td>{{ review.content }}</td>
+				<td>{{ review.score }}</td>
+				<td>
+					<img src="{{ review.imageUrl }}" height="150px" class="btn" /></td>
+				<td>
+					<a href="/reviews/edit/{{ review.id }}" class="btn">Editar</a>
+					{{ "-" }}
+					<a href="#" class="btn">Eliminar</a>
+				</td>
+			</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+{% endblock %}
