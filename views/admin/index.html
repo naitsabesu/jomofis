@@ -17,13 +17,14 @@
 		<tbody>
 			{% for review in reviews %}
 			<tr>
-				<td>{{ review.id }}</td>
+				<td> - </td>
 				<td>{{ review.title }}</td>
 				<td>{{ review.hashtag }}</td>
 				<td>{{ review.content }}</td>
 				<td>{{ review.score }}</td>
 				<td>
-					<img src="{{ review.imageUrl }}" height="150px" class="btn" /></td>
+					<img src="/{{ review.imageUrl }}" height="150px" class="btn" />
+				</td>
 				<td>
 					<a href="/reviews/edit/{{ review.id }}" class="btn">Editar</a>
 					{{ "-" }}
